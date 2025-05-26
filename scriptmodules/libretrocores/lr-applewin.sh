@@ -13,7 +13,7 @@ rp_module_id="lr-applewin"
 rp_module_desc="Apple2e emulator: AppleWin (current) port for libretro"
 rp_module_help="ROM Extension: .po .dsk .nib .PO .DSK .NIB .zip\n\nCopy your roms to $romdir/apple2"
 rp_module_licence="GPL2 https://raw.githubusercontent.com/audetto/AppleWin/master/LICENSE"
-rp_module_repo="git https://github.com/audetto/AppleWin.git master 87ab72a"
+rp_module_repo="git https://github.com/audetto/AppleWin.git master"
 rp_module_section="exp"
 rp_module_flags=""
 
@@ -31,12 +31,19 @@ function depends_lr-applewin() {
         libyaml-dev
         meson
         ninja-build
+        xxd
     )
+    if [[ "$__os_debian_ver" -gt 10 ]]; then
+        depends+=(libslirp-dev)
+    fi
     getDepends "${depends[@]}"
 }
 
 function sources_lr-applewin() {
-    gitPullOrClone $md_build/../libslirp https://gitlab.freedesktop.org/slirp/libslirp.git
+    if [[ "$__os_debian_ver" -le 10 ]]; then
+        # no libslirp-dev package in Buster
+        gitPullOrClone $md_build/../libslirp https://gitlab.freedesktop.org/slirp/libslirp.git
+    fi
     gitPullOrClone
     # make sure resources/ will be looked up at /opt/retropie/libretrocores/lr-applewin/
     sed -i s,CMAKE_SOURCE_DIR,\"$md_inst\", \
@@ -44,13 +51,22 @@ function sources_lr-applewin() {
 }
 
 function build_lr-applewin() {
-    # for libslirp
-    pushd $md_build/../libslirp
-    meson build
-    ninja -C build install
-    popd
+    if [[ "$__os_debian_ver" -le 10 ]]; then
+        # for libslirp
+        pushd $md_build/../libslirp
+        # downgrade meson requirement to match Buster latest version
+        sed -i s,"meson_version : .*","meson_version : \'>= 0.56\'", meson.build
+        meson build
+        ninja -C build install
+        ldconfig
+        popd
+    fi
 
     # for AppleWin
+    if [[ "$__os_debian_ver" -le 10 ]]; then
+        # Buster: for GCC8 explicitly link stdc++-fs
+        sed -i '/# this only affects common2/i link_libraries("$<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:-lstdc++fs>")' CMakeLists.txt
+    fi
     mkdir target
     cd target
     cmake -DBUILD_LIBRETRO=ON -DCMAKE_BUILD_TYPE=RELEASE ..
@@ -60,7 +76,6 @@ function build_lr-applewin() {
 }
 
 function install_lr-applewin() {
-    rm -rf $md_build/../libslirp
     md_ret_files=(
         'LICENSE'
         'resource/'
