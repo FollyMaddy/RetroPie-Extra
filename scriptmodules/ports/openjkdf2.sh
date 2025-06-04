@@ -1,114 +1,160 @@
 #!/usr/bin/env bash
 
-# This file is part of The RetroPie Project
-#
-# The RetroPie Project is the legal property of its developers, whose names are
-# too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
-#
-# See the LICENSE.md file at the top-level directory of this distribution and
-# at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
-#
+# OpenJKDF2 RetroPie Installation Script (X11-only version)
+# For Raspberry Pi 5 (Bookworm) - Stable X11 implementation
 
 rp_module_id="openjkdf2"
-rp_module_desc="OpenJKDF2 is a function-by-function reimplementation of Dark Forces 2."
-# I hate this really long line.  I couldn't get all the information to display otherwise.
-#
-rp_module_help="Data must be installed manually.\nData for Jedi Knight - Dark Forces 2 goes into $romdir/openjkdf2/openjkdf2.\nData for Jedi Knight - Mysteries of the Sith goes into $romdir/openjkdf2/openjkmots.\nFor both games the 'episode' 'player' 'resource' and 'Music' directories must be copied into their repsective folders."
-rp_module_licence="OTHER https://github.com/shinyquagsire23/OpenJKDF2/blob/master/LICENSE.md"
-rp_module_repo="git https://github.com/shinyquagsire23/OpenJKDF2.git v0.8.12"
+rp_module_desc="Jedi Knight: Dark Forces II + MOTS Expansion"
+rp_module_licence="GPL2 https://raw.githubusercontent.com/shinyquagsire23/OpenJKDF2/master/LICENSE"
+rp_module_repo="git https://github.com/shinyquagsire23/OpenJKDF2.git"
 rp_module_section="exp"
-rp_module_flags="!all x86_64"
+rp_module_flags="!all rpi5"
 
 function depends_openjkdf2() {
-    local depends=(build-essential cmake make python3 python3-pip bison imagemagick libgtk-3-dev
-                   protobuf-compiler zsh)
-    if isPlatform "64bit"; then
-        depends+=(clang libsdl2-dev libsdl2-mixer-dev libopenal-dev libglew-dev libssl-dev
-                  libprotobuf-dev)
-    # else
-    #     # The following are also referenced in https://github.com/shinyquagsire23/OpenJKDF2/blob/master/BUILDING.md
-    #     # However, it appears they are invalid packages.
-    #     local depends=(
-    #         #multilib-devel lib32-sdl2 lib32-glew lib32-openal # ?
-    #     )
-    fi
-    if compareVersions "$__os_debian_ver" gt 11 || compareVersions "$__os_ubuntu_ver" gt 21.10; then
-        depends+=(libstdc++-12-dev)
-    fi
-
-
-
+    local depends=(
+        libssl-dev build-essential libsdl2-dev libopenal-dev
+        libopusfile-dev libpng-dev zlib1g-dev libbz2-de	libgtk-3-dev libglew-dev
+        python3-full python3-venv mesa-utils xorg xinit
+        openbox xserver-xorg-input-evdev xserver-xorg-input-libinput
+    )
     getDepends "${depends[@]}"
-
-    # NOTE: There is a python pypi dependency as well.
-    pip3 install cogapp
 }
 
 function sources_openjkdf2() {
     gitPullOrClone
+    
+    python3 -m venv "$md_build/venv"
+    source "$md_build/venv/bin/activate"
+    "$md_build/venv/bin/pip" install cogapp
 }
 
 function build_openjkdf2() {
-    export CC=clang
-    export CXX=clang++
-
-    if isPlatform "64bit"; then
-        local build_dir="build_linux64"
-
-        chmod +x build_linux64.sh
-        ./build_linux64.sh
-    else
-        local build_dir="build"
-        mkdir -p $build_dir
-        cd $build_dir
-
-        cmake .. --toolchain ../cmake_modules/linux_32_toolchain.cmake
-        make -j10
-    fi
-
-    md_ret_require=$build_dir/openjkdf2
+    source "$md_build/venv/bin/activate"
+    
+    cmake -S . -B build \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DFEATURE_EDITOR=OFF \
+        -DFEATURE_LAUNCHER=OFF \
+        -DFEATURE_NETWORKING=OFF \
+        -DTARGET_USE_OPENGL=ON \
+        -DTARGET_USE_SDL2=ON
+    
+    cmake --build build -j$(nproc)
+    md_ret_require="$md_build/build/openjkdf2"
 }
 
 function install_openjkdf2() {
-    if isPlatform "64bit"; then
-        local build_dir="build_linux64"
-    else
-        local build_dir="build"
-    fi
-
     md_ret_files=(
-        $build_dir/openjkdf2
-        $build_dir/libGameNetworkingSockets.so
-        $build_dir/libprotobuf.so.3.21.4.0
+        'build/openjkdf2'
+        'README.md'
+        'LICENSE.md'
     )
-}
-
-function game_data_openjkdf2() {
-    chmod -R $user:$user "$romdir/ports/openjkdf2"
-}
-
-function add_games_openjkdf2() {
-    # If neither game data is available, create both launcher (assuming person will add data later)
-    if [[ ! -f "$romdir/openjkdf2/openjkdf2/Episode/JK1.GOB" ]] && [[ ! -f "$romdir/openjkdf2/openjkmots/Episode/JKM.GOO" ]]; then
-        addPort "$md_id" "openjkdf2" "Star Wars - Jedi Knight - Dark Forces II" "$md_inst/openjkdf2 %ROM%" ""
-        addPort "$md_id" "openjkdf2" "Star Wars - Jedi Knight - Mysteries of the Sith" "$md_inst/openjkdf2 %ROM%" "-motsCompat"
-    fi
-    # If Dark Forces 2 Data Available, create Dark Forces 2 launcher
-    if [[ -f "$romdir/openjkdf2/openjkdf2/Episode/JK1.GOB" ]]; then
-        addPort "$md_id" "openjkdf2" "Star Wars - Jedi Knight - Dark Forces II" "$md_inst/openjkdf2 %ROM%" ""
-    fi
-    # If Mysteries of the Sith data available, create MotS launcher
-    if [[ -f "$romdir/openjkdf2/openjkmots/Episode/JKM.GOO" ]]; then
-        addPort "$md_id" "openjkdf2" "Star Wars - Jedi Knight - Mysteries of the Sith" "$md_inst/openjkdf2 %ROM%" "-motsCompat"
-    fi
 }
 
 function configure_openjkdf2() {
     mkRomDir "ports/openjkdf2"
+    mkRomDir "ports/openjkdf2/mots"
+    
+    # Create launcher scripts
+    cat > "$md_inst/openjkdf2-launcher.sh" << _EOF_
+#!/bin/bash
+cd "$md_inst"
+export OPENJKDF2_ROOT="$romdir/ports/openjkdf2"
+export MESA_GL_VERSION_OVERRIDE=3.3
+export MESA_GLSL_VERSION_OVERRIDE=330
+export SDL_VIDEODRIVER=x11
 
-    add_games_openjkdf2
+# Create minimal Openbox config
+mkdir -p "$md_conf_root/openjkdf2"
+cat > "$md_conf_root/openjkdf2/rc.xml" << _OB_CFG_
+<openbox_config xmlns="http://openbox.org/3.4/rc">
+  <applications>
+    <application class="*">
+      <decor>no</decor>
+      <focus>yes</focus>
+      <desktop>all</desktop>
+      <layer>below</layer>
+      <maximized>true</maximized>
+    </application>
+  </applications>
+</openbox_config>
+_OB_CFG_
 
-    moveConfigDir "$home/.local/share/OpenJKDF2" "$romdir/ports/openjkdf2"
+# Launch through Openbox
+openbox --config-file "$md_conf_root/openjkdf2/rc.xml" &
+sleep 1
+./openjkdf2
+killall openbox
+_EOF_
 
-    [[ "$md_mode" == "install" ]] && game_data_openjkdf2
+    cat > "$md_inst/openjkmots-launcher.sh" << _EOF_
+#!/bin/bash
+cd "$md_inst"
+export OPENJKDF2_ROOT="$romdir/ports/openjkdf2"
+export OPENJKMOTS_ROOT="$romdir/ports/openjkdf2/mots"
+export MESA_GL_VERSION_OVERRIDE=3.3
+export MESA_GLSL_VERSION_OVERRIDE=330
+export SDL_VIDEODRIVER=x11
+
+# Create minimal Openbox config
+mkdir -p "$md_conf_root/openjkdf2"
+cat > "$md_conf_root/openjkdf2/rc.xml" << _OB_CFG_
+<openbox_config xmlns="http://openbox.org/3.4/rc">
+  <applications>
+    <application class="*">
+      <decor>no</decor>
+      <focus>yes</focus>
+      <desktop>all</desktop>
+      <layer>below</layer>
+      <maximized>true</maximized>
+    </application>
+  </applications>
+</openbox_config>
+_OB_CFG_
+
+# Launch through Openbox
+openbox --config-file "$md_conf_root/openjkdf2/rc.xml" &
+sleep 1
+./openjkdf2 -mots
+killall openbox
+_EOF_
+    
+    chmod +x "$md_inst/openjkdf2-launcher.sh"
+    chmod +x "$md_inst/openjkmots-launcher.sh"
+    
+    # Add ports with XINIT prefix
+    addPort "$md_id" "openjkdf2" "Jedi Knight: Dark Forces II" "XINIT:$md_inst/openjkdf2-launcher.sh -- :0 -nocursor -keeptty"
+    addPort "$md_id" "openjkmots" "Jedi Knight: Mysteries of the Sith" "XINIT:$md_inst/openjkmots-launcher.sh -- :0 -nocursor -keeptty"
+    
+    # Create documentation
+    cat > "$md_inst/README-RETROPIE.txt" << _EOF_
+=== WORKING Installation ===
+1. Copy original game files to:
+   - Base game: $romdir/ports/openjkdf2/
+   - MOTS expansion: $romdir/ports/openjkdf2/mots/
+
+Required files for base game:
+- JKDF2.EXE
+- ASSETS/
+- GOOBERS/
+- LEVELS/
+- MOVIES/
+- MUSIC/
+- TEXTURES/
+
+Required files for MOTS expansion:
+- JKDF2.EXE (from MOTS)
+- ASSETS/
+- LEVELS/
+- MOVIES/
+- MUSIC/
+- TEXTURES/
+
+Controls:
+- Mouse should work normally
+- Alt+Enter to toggle fullscreen
+- F10 to exit game
+
+Note: Both installations share the same executable but use different data directories.
+_EOF_
 }

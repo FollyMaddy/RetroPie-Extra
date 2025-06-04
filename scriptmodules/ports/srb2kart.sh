@@ -17,15 +17,17 @@ srb2kVER=v1.3
 rp_module_id="srb2kart"
 rp_module_desc="Sonic Robo Blast 2 Kart - 3D Sonic the Hedgehog fan-game based on Sonic Robo Blast 2 built using a modified version of the Doom Legacy source port of Doom"
 rp_module_licence="GPL2 https://raw.githubusercontent.com/STJr/Kart-Public/master/LICENSE"
+rp_module_repo="git https://github.com/STJr/Kart-Public.git $srb2kVER"
 rp_module_section="exp"
+rp_module_flags="!all rpi4 rpi5"
 
 function depends_srb2kart() {
     getDepends cmake libsdl2-dev libsdl2-mixer-dev
 }
 
 function sources_srb2kart() {
-	gitPullOrClone "$md_build" https://github.com/STJr/Kart-Public.git $srb2kVER
-    downloadAndExtract "$webSERVER:$webPORT/srb2kart-assets.tar.gz" "$md_build"
+    gitPullOrClone
+    downloadAndExtract "https://www.dropbox.com/s/xe8pzukzby1bwrj/srb2kart-assets.tar.gz" "$md_build"
 }
 
 function build_srb2kart() {

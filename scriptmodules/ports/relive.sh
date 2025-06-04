@@ -15,7 +15,7 @@ rp_module_id="relive"
 rp_module_desc="R.E.L.I.V.E - Oddworld: Abe's Oddysee and Oddworld: Abe's Exoddus"
 rp_module_repo="git https://github.com/AliveTeam/alive_reversing.git"
 rp_module_section="exp"
-rp_module_flags="noinstclean !all rpi3 rpi4 rpi5"
+rp_module_flags="noinstclean"
 
 function depends_relive() {
     local depends=(
@@ -36,26 +36,23 @@ function sources_relive() {
    gitPullOrClone
 }
 
-
 function build_relive() {
-	cd alive_reversing
-	mkdir build
-    cd build
+    mkdir -p build && cd build
 	
-	export CC=/usr/bin/clang
-	export CXX=/usr/bin/clang++
+    export CC=/usr/bin/clang
+    export CXX=/usr/bin/clang++
+
     cmake -S .. -B .
-	make
+    make -j$(nproc)
 	#make -j$(nproc) > output.txt 2> errors.txt
     
-	    md_ret_require=(
-      )
+   md_ret_require="$md_build/build/Source/relive/relive"
 }
 
 function install_relive() {
-	md_ret_files=(alive_reversing/build/Source/relive/relive
-        	alive_reversing/assets/relive-ao
-	alive_reversing/assets/relive-ae
+	md_ret_files=('build/Source/relive/relive'
+	'assets/relive-ae'
+	'assets/relive-ao'
         )
 }
 

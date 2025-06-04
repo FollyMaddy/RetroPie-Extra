@@ -39,11 +39,17 @@ function copy_rom_dark() {
     # Iterate through the files in the ROM directory
     for file in "$romdir"/*; do
         if [[ -f "$file" ]]; then
-            local sha1=$(sha1sum "$file" | awk '{print $1}')
-            # Check if the calculated SHA1 matches either of the specified hashes
-            if [[ "$sha1" == "$hash1" || "$sha1" == "$hash2" ]]; then
-                cp "$file" "$destdir"
-                echo "Copied $file to $destdir"
+            local md5=$(md5sum "$file" | awk '{print $1}')
+            # Check if the calculated md5 matches either of the specified hashes
+            if [[ "$md5" == "$hash1" ]]; then
+                local base_name=$(basename "$file")
+                local new_name="pd.ntsc-final.z64"
+
+                # Copy and rename the file to the destination directory
+
+                cp "$file" "$destdir/$new_name"
+
+                echo "Copied and renamed $file to $destdir/$new_name"
                 return 0
             fi
         fi

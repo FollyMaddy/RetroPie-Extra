@@ -9,8 +9,8 @@
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
 #
 
-rp_module_id="mesa"
-rp_module_desc="Mesa3d OpenGL and Vulkan Drivers"
+rp_module_id="mesa-pi4"
+rp_module_desc="Mesa3d OpenGL and Vulkan Drivers for the pi4"
 rp_module_licence="MIT https://www.mesa3d.org/license.html"
 rp_module_section="depends"
 rp_module_flags="rpi4 x11"
@@ -23,15 +23,15 @@ rp_module_flags="rpi4 x11"
 # https://www.raspberrypi.org/forums/viewtopic.php?t=277125
 # https://www.raspberrypi.org/forums/viewtopic.php?t=289168
 
-function _latest_ver_mesa() {
+function _latest_ver_mesa-pi4() {
     # This defines the Git tag / branch which will be used. Main repository is at:
     # https://gitlab.freedesktop.org/mesa/mesa/
     echo mesa-21.3.9
 }
 
-function depends_mesa() {
+function depends_mesa-pi4() {
     #local depends=(meson ninja-build libgbm-dev libdrm-dev libpciaccess-dev)
-    local depends=(vulkan-tools libxcb-shm0-dev)
+    local depends=(vulkan-tools libxcb-shm0-dev python3-mako)
 
     getDepends "${depends[@]}"
     
@@ -50,12 +50,12 @@ function depends_mesa() {
     apt update
 }
 
-function sources_mesa() {
+function sources_mesa-pi4() {
     # 5: Run the following command to clone the MESA git repo to your pi:
     gitPullOrClone "$md_build" https://gitlab.freedesktop.org/mesa/mesa/ "$(_latest_ver_mesa)"
 }
 
-function build_mesa() {
+function build_mesa-pi4() {
     #TODO: Research if there are any RPi specific optimization flags. Check mesa-drm.sh scriptmodule.
     #TODO: Also check https://github.com/anholt/mesa/wiki/Raspberry-Pi-cross-compile for optimization possibilities
     # 6: Create the build directory and change to that directory:
@@ -67,7 +67,7 @@ function build_mesa() {
     ninja -C builddir
 }
 
-function install_mesa() {
+function install_mesa-pi4() {
     # 8: Install new MESA version (You'll see various warnings, these are safe and can be ignored)
     echo "Installing into $md_inst"
     cd builddir

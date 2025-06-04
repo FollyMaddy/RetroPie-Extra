@@ -14,7 +14,7 @@ rp_module_id="revolt"
 rp_module_desc="REvolt - a radio control car racing themed video game"
 rp_module_licence="MIT https://raw.githubusercontent.com/jmcerrejon/PiKISS/master/LICENSE.md"
 rp_module_section="exp"
-rp_module_flags="rpi4"
+rp_module_flags="rpi5 rpi4"
 
 function depends_revolt() {
     getDepends libsdl2-image-2.0-0 libdumb1-dev libdumb1 libenet7 libunistring-dev zenity matchbox
@@ -40,7 +40,9 @@ function install_revolt() {
         sudo ln -s /usr/lib/arm-linux-gnueabihf/libunistring.so.2.1.0 /usr/lib/libunistring.so.0
     fi
 
-    if [ ! -f /usr/lib/arm-linux-gnueabihf/libunistring.so.2 ]; then
+    if isPlatform "64bit"; then
+        sudo ln -s /usr/lib/aarch64-linux-gnu/libunistring.so.2 /usr/lib/aarch64-linux-gnu/libunistring.so.0
+    else
         sudo ln -s /usr/lib/arm-linux-gnueabihf/libunistring.so.2 /usr/lib/arm-linux-gnueabihf/libunistring.so.0
     fi
 

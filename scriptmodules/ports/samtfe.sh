@@ -16,45 +16,24 @@ rp_module_help="NEED Serious Sam Classic version of this game\nCopy all *.gro fi
 \nHelp (folder)\nLevels (folder)\n1_00_ExtraTools.gro\n1_00_music.gro\n1_00c_Logo.gro\n1_00c.gro\n1_00c_scripts.gro\n1_04_patch.gro"
 rp_module_repo="git https://github.com/tx00100xt/SeriousSamClassic.git main"
 rp_module_section="exp"
-rp_module_flags="!all rpi4 rpi3"
+rp_module_flags="!all rpi5"
 
 function depends_samtfe() {
-    getDepends libogg-dev libvorbis-dev xorg
+    depends_samtse
 }
 
 function sources_samtfe() {
-    gitPullOrClone 
+    sources_samtse 
 }
 
 function build_samtfe() {
-    cd "$md_build/SamTFE/Sources"
-    ./build-linux64.sh -DTFE=TRUE -DRPI4=TRUE
+     build_samtse
 }
 
 function install_samtfe() {
-   md_ret_files=(  
-    'SamTFE/Bin'
-    'SamTFE/SE1_10b.gro'
-
-)
+    install_samtse
 }
 
 function configure_samtfe() {
-    mkdir -p "$md_inst/tfe"
-    sudo mv -v "/opt/retropie/ports/samtfe/Bin" "/opt/retropie/ports/samtfe/tfe"
-    sudo mv -v "/opt/retropie/ports/samtfe/SE1_10b.gro" "/opt/retropie/ports/samtfe/tfe"
-
-   mkRomDir "ports/$md_id"
-   ln -sf "/opt/retropie/ports/$md_id/tfe" "$romdir/ports/$md_id/"
-    local script="$md_inst/$md_id.sh"
-      cat > "$script" << _EOF_
-
-#!/bin/bash
-
-"$md_inst/tfe/Bin/SeriousSam"
-
-_EOF_
-    chmod +x "$md_inst/$md_id.sh"
-    chown -R $user:$user "/opt/retropie/ports/samtfe/tfe"
-    addPort "$md_id" "samtfe" "Serious Sam Classic The First Encounter" "XINIT: $script %ROM%"
+    configure_samtse
 }

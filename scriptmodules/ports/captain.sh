@@ -15,10 +15,10 @@ rp_module_help="Controls: Arrow: Move, CTRL: Action, ENTER: Change character whe
 rp_module_licence="MIT https://raw.githubusercontent.com/jmcerrejon/PiKISS/master/LICENSE.md"
 rp_module_repo="file https://github.com/Exarkuniv/Rpi-pikiss-binary/raw/Master/captain_s.tar.gz"
 rp_module_section="exp"
-rp_module_flags="!armv6 !all rpi4"
+rp_module_flags="!armv6"
 
 function depends_captain_s() {
-    getDepends xorg liballegro4.4 libpng12-0
+    getDepends xorg liballegro4.4 libpng16-16
 }
 
 function sources_captain_s() {
@@ -32,11 +32,9 @@ function install_captain_s() {
 		'lang'
 		'capitan.cfg'
 		'captain'
-		'captain.sh'
     )
 }
 
 function configure_captain_s() {
-     #moveConfigDir "$md_inst/.avp" "$md_conf_root/.avp"
     addPort "$md_id" "captain_s" "Captain 'S' The Remake" "XINIT: pushd $md_inst; $md_inst/captain; popd"
 }

@@ -33,6 +33,8 @@ function sources_rott-huntbgin() {
 }
 
 function build_rott-huntbgin() {
+    sed -i 's#joystickenabled  = 0#joystickenabled  = 1#' "$md_build/src/rt_cfg.c"
+    sed -i 's#joypadenabled    = 0#joypadenabled    = 1#' "$md_build/src/rt_cfg.c"
     sed -i 's/SHAREWARE   ?= 0/SHAREWARE   ?= 1/g' "$md_build/src/Makefile"
     cd src
     make rott

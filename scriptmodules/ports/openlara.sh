@@ -15,7 +15,7 @@ rp_module_desc="OpenLara - Source port of Tomb Raider 1-5 (only 1 works)."
 rp_module_licence="BSD 2-Clause https://github.com/XProger/OpenLara?tab=BSD-2-Clause-1-ov-file#readme"
 rp_module_help="OpenLara requires the data from a full or demo version of Tomb Raider 1-5. For example, copy the full DATA and FMV folders from the PC CD-ROM. This script installs the PC demo."
 rp_module_section="exp"
-rp_module_flags="!all rpi4 rpi3 rpi5"
+rp_module_flags="!all rpi5"
 
 function depends_openlara() {
 	local depends=(libsdl2-dev libsdl2-net-dev libsdl2-mixer-dev libsdl2-image-dev)
@@ -45,8 +45,15 @@ function install_openlara() {
 }
 
 function game_data_openlara() {
-    chown -R $user:$user "$romdir/ports/tombraider"
+    mkdir "$home/.openlara"
     chown -R $user:$user "$md_conf_root/openlara"
+
+    if [[ ! -f "$romdir/ports/tombraider/DATA/" ]]; then
+        downloadAndExtract "https://github.com/Exarkuniv/game-data/raw/main/tomb.zip" "$romdir/ports/tombraider"
+    #mv "$romdir/ports/tombraider/tomb/"* "$romdir/ports/tombraider"
+    #rmdir "$romdir/ports/tombraider/tomb/"
+    chown $__user:$__group -R "$romdir/ports/tombraider"
+    fi
 }
 
 function configure_openlara() {

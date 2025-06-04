@@ -12,16 +12,23 @@
 rp_module_id="septerra"
 rp_module_desc="SR-Septerra - Septerra Core: Legacy of the Creator port "
 rp_module_help="This port requires Septerra Core v1.04.\n\nInstall files .DB, .idx, .ini, .mft, and .conf into $romdir/ports/septerra"
-rp_module_repo="wget https://github.com/M-HT/SR/releases/download/septerra_v1.04.0.10/SepterraCore-Linux-armv7-gnueabihf-v1.04.0.10.tar.gz"
+rp_module_repo="wget https://github.com/M-HT/SR/releases/download/septerra_v1.04.0.12/SepterraCore-Linux-armv7-gnueabihf-v1.04.0.12.tar.gz"
 rp_module_section="exp"
-rp_module_flags="!mali !all rpi4 rpi3"
+rp_module_flags="!mali !all rpi5"
 
 function depends_septerra() {
     getDepends build-essential git scons automake gdc llvm libsdl2-dev libmpg123-dev libquicktime-dev libjudy-dev libsdl2-mixer-dev
 }
 
 function install_bin_septerra() {
+    if isPlatform "rpi5"; then
+    downloadAndExtract "https://github.com/M-HT/SR/releases/download/septerra_v1.04.0.12/SepterraCore-Linux-arm-aarch64-v1.04.0.12-EXPERIMENTAL.tar.gz" "$md_inst"
+
+    else
+
     downloadAndExtract "$md_repo_url" "$md_inst"
+
+    fi
 }
 
 function configure_septerra() {
@@ -32,6 +39,17 @@ function configure_septerra() {
     addPort "$md_id" "septerra" "Septerra Core - Legacy of the Creator" "$script %ROM%"
 
     #create buffer script for launch
+    if isPlatform "rpi5"; then
+    cat > "$script" << _EOF_
+#!/bin/bash
+pushd "$romdir/ports/$md_id"
+cd $md_inst
+./Septerra.sh
+popd
+_EOF_
+
+    else
+
     cat > "$script" << _EOF_
 #!/bin/bash
 pushd "$romdir/ports/$md_id"
@@ -39,5 +57,6 @@ pushd "$romdir/ports/$md_id"
 popd
 _EOF_
 
+fi
     chmod +x "$script"
 }

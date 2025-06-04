@@ -17,7 +17,6 @@ rp_module_repo="git https://github.com/SuperFromND/Ikemen-GO.git develop"
 rp_module_section="exp"
 rp_module_flags="!all rpi4 rpi3 rpi5"
 
-
 function depends_ikemen-go() {
     getDepends golang golang-1.19 libgl1-mesa-dev xinit xorg libopenal-dev libgtk-3-dev libasound2-dev
 }
@@ -31,7 +30,7 @@ function build_ikemen-go() {
     sed -i 's#150#330#' "$md_build/src/render_gl_gl32.go"
 
     make Ikemen_GO_LinuxARM
-    # grabs default screenpack and content required for the game to run; note that the screenpack has a CC-BY-NC 3.0 license
+    #grabs default screenpack and content required for the game to run; note that the screenpack has a CC-BY-NC 3.0 license
     git clone https://github.com/ikemen-engine/Ikemen_GO-Elecbyte-Screenpack.git elecbyte
     md_ret_require="$md_build/bin/Ikemen_GO_LinuxARM"
 }

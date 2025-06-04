@@ -16,7 +16,7 @@ rp_module_licence="GPL2 https://raw.githubusercontent.com/JACoders/OpenJK/master
 rp_module_help="Copy assets0.pk3, assets1.pk3, assets2.pk3, and assets3.pk3 into $romdir/ports/jediacademy/"
 rp_module_repo="git https://github.com/JACoders/OpenJK.git master"
 rp_module_section="exp"
-rp_module_flags="!all rpi4 rpi3 rpi5"
+rp_module_flags=""
 
 function _arch_openjk_ja() {
         # exact parsing from Makefile
@@ -25,7 +25,6 @@ function _arch_openjk_ja() {
     else
         echo "$(uname -m | sed -e 's/i.86/x86/' | sed -e 's/^arm.*/arm/')"
    fi
-
 }
 
 function depends_openjk_ja() {

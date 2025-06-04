@@ -61,7 +61,7 @@ function install_bin_ut() {
     # The download files use "x86" for the i386 architecture
     [[ "${arch}" == "i386" ]] && arch="x86"
 
-    downloadAndExtract "$dl_url" "$md_inst" "--no-same-owner"
+    downloadAndExtract "https://github.com/OldUnreal/UnrealTournamentPatches/releases/download/v469e-rc8/OldUnreal-UTPatch469e-Linux-arm64.tar.bz2" "$md_inst" "--no-same-owner"
 }
 
 function __config_game_data() {
@@ -136,6 +136,7 @@ function configure_ut() {
 
     # We only want to install this if it is not already installed.
     if [[ ! -f "$home/.utpg/System/UnrealTournament.ini" ]]; then
+        mkdir "$home/.utpg/System/"
         cp "$md_data/UnrealTournament.ini" "$home/.utpg/System/UnrealTournament.ini"
         chown "$__user":"$__group" "$home/.utpg/System/UnrealTournament.ini"
         chmod 644 "$home/.utpg/System/UnrealTournament.ini"
