@@ -63,7 +63,7 @@ function sources_borked3ds() {
 	
 	if isPlatform "aarch64"; then
 		gitPullOrClone "$md_build" https://github.com/gvx64/Borked3DS-rpi.git
-		downloadAndExtract https://cmake.org/files/v4.0/cmake--linux-aarch64.tar.gz "$md_build"
+		downloadAndExtract https://cmake.org/files/v4.0/cmake-4.0.2-linux-aarch64.tar.gz "$md_build"
 		mv cmake-4.0.2* cmake-4.0.2
 	else
 		gitPullOrClone "$md_build" https://github.com/rtiangha/Borked3DS.git
