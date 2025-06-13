@@ -13,7 +13,7 @@
  
 rp_module_id="borked3ds"
 rp_module_desc="3DS Emulator borked3ds"
-rp_module_help="ROM Extension: .3ds .3dsx .elf .axf .cci ,cxi .app\n\nCopy your 3DS roms to $romdir/3ds"
+rp_module_help="ROM Extension: .3ds .3dsx .elf .axf .cci .cxi .app\n\nCopy your 3DS roms to $romdir/3ds"
 rp_module_licence="GPL2 https://github.com/Borked3DS/Borked3DS/blob/master/license.txt"
 rp_module_section="exp"
 rp_module_flags="64bit"
@@ -75,8 +75,8 @@ function sources_borked3ds() {
 function build_borked3ds() {
 	mkdir build
 	cd build
-	$md_build/cmake-4.0.2/bin/cmake .. -DCMAKE_BUILD_TYPE=Release
-	$md_build/cmake-4.0.2/bin/cmake --build . -- -j"$(nproc)"
+	$md_build/cmake-4.0.2/bin/cmake .. -DCMAKE_BUILD_TYPE=Release -DDYNARMIC_USE_BUNDLED_EXTERNALS=OFF
+ 	$md_build/cmake-4.0.2/bin/cmake --build . -- -j"$(nproc)"
 	md_ret_require="$md_build/build/bin"
 }
  
@@ -99,5 +99,5 @@ function configure_borked3ds() {
 	#addEmulator 1 "$md_id-room" "3ds" "$launch_prefix$md_inst/borked3ds-room"
 	#addEmulator 2 "$md_id-cli" "3ds" "$launch_prefix$md_inst/borked3ds-cli"
 	#addEmulator 3 "$md_id-tests" "3ds" "$launch_prefix$md_inst/tests"
-	addSystem "3ds" "3ds" ".3ds .3dsx .elf .axf .cci ,cxi .app" 
+	addSystem "3ds" "3ds" ".3ds .3dsx .elf .axf .cci .cxi .app" 
 }
