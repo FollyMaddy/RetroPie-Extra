@@ -33,7 +33,6 @@ function depends_borked3ds() {
 		# robin-map-dev is in the source and found when using https://github.com/rtiangha/Borked3DS.git
 		local depends=(build-essential cmake clang clang-format libc++-dev libsdl2-dev libssl-dev qt6-l10n-tools qt6-tools-dev qt6-tools-dev-tools  qt6-base-dev qt6-base-private-dev libxcb-cursor-dev libvulkan-dev qt6-multimedia-dev libqt6sql6 libqt6core6 libasound2-dev xorg-dev libx11-dev libxext-dev libpipewire-0.3-dev libsndio-dev ffmpeg libgl-dev  libswscale-dev libavformat-dev libavcodec-dev libavdevice-dev libglut3.12 libglut-dev freeglut3-dev mesa-vulkan-drivers) 
 	fi
-	
 	getDepends "${depends[@]}"
 }
 
@@ -64,18 +63,19 @@ function sources_borked3ds() {
 	if isPlatform "aarch64"; then
 		gitPullOrClone "$md_build" https://github.com/gvx64/Borked3DS-rpi.git
 		downloadAndExtract https://cmake.org/files/v4.0/cmake-4.0.2-linux-aarch64.tar.gz "$md_build"
-		mv cmake-4.0.2* cmake-4.0.2
 	else
 		gitPullOrClone "$md_build" https://github.com/rtiangha/Borked3DS.git
 		downloadAndExtract https://cmake.org/files/v4.0/cmake-4.0.2-linux-x86_64.tar.gz "$md_build"
-		mv cmake-4.0.2* cmake-4.0.2
-	fi	
+	fi
+ 	mv cmake-4.0.2* cmake-4.0.2
 }
  
 function build_borked3ds() {
+	local extra_build_options
+ 	isPlatform "aarch64" && extra_build_options="-DDYNARMIC_USE_BUNDLED_EXTERNALS=OFF"
 	mkdir build
 	cd build
-	$md_build/cmake-4.0.2/bin/cmake .. -DCMAKE_BUILD_TYPE=Release -DDYNARMIC_USE_BUNDLED_EXTERNALS=OFF
+	$md_build/cmake-4.0.2/bin/cmake .. -DCMAKE_BUILD_TYPE=Release $extra_build_options
  	$md_build/cmake-4.0.2/bin/cmake --build . -- -j"$(nproc)"
 	md_ret_require="$md_build/build/bin"
 }
@@ -93,11 +93,13 @@ function configure_borked3ds() {
     mkRomDir "3ds"
     ensureSystemretroconfig "3ds"
     local launch_prefix
+    local launch_extension
     isPlatform "kms" && launch_prefix="XINIT-WMC:"
-	addEmulator 0 "$md_id-ui" "3ds" "$launch_prefix$md_inst/borked3ds"
-	addEmulator 1 "$md_id-roms" "3ds" "$launch_prefix$md_inst/borked3ds %ROM%"
-	#addEmulator 1 "$md_id-room" "3ds" "$launch_prefix$md_inst/borked3ds-room"
-	#addEmulator 2 "$md_id-cli" "3ds" "$launch_prefix$md_inst/borked3ds-cli"
-	#addEmulator 3 "$md_id-tests" "3ds" "$launch_prefix$md_inst/tests"
+    isPlatform "aarch64" && launch_extension="env MESA_EXTENSION_OVERRIDE=GL_OES_texture_buffer "
+	addEmulator 0 "$md_id-ui" "3ds" "$launch_extension$launch_prefix$md_inst/borked3ds"
+	addEmulator 1 "$md_id-roms" "3ds" "$launch_extension$launch_prefix$md_inst/borked3ds %ROM%"
+	#addEmulator 1 "$md_id-room" "3ds" "$launch_extension$launch_prefix$md_inst/borked3ds-room"
+	#addEmulator 2 "$md_id-cli" "3ds" "$launch_extension$launch_prefix$md_inst/borked3ds-cli"
+	#addEmulator 3 "$md_id-tests" "3ds" "$launch_extension$launch_prefix$md_inst/tests"
 	addSystem "3ds" "3ds" ".3ds .3dsx .elf .axf .cci .cxi .app" 
 }
