@@ -95,7 +95,7 @@ function configure_borked3ds() {
     local launch_prefix
     local launch_extension
     isPlatform "kms" && launch_prefix="XINIT-WMC:"
-    isPlatform "aarch64" && launch_extension="env MESA_EXTENSION_OVERRIDE=GL_OES_texture_buffer "
+    isPlatform "aarch64" && launch_extension="env MESA_EXTENSION_OVERRIDE=GL_OES_texture_buffer;"
 	addEmulator 0 "$md_id-ui" "3ds" "$launch_extension$launch_prefix$md_inst/borked3ds"
 	addEmulator 1 "$md_id-roms" "3ds" "$launch_extension$launch_prefix$md_inst/borked3ds %ROM%"
 	#addEmulator 1 "$md_id-room" "3ds" "$launch_extension$launch_prefix$md_inst/borked3ds-room"
