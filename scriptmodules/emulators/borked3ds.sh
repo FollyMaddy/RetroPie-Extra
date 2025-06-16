@@ -95,11 +95,59 @@ function configure_borked3ds() {
     local launch_prefix
     local launch_extension
     isPlatform "kms" && launch_prefix="XINIT-WMC:"
-    isPlatform "aarch64" && launch_extension="env MESA_EXTENSION_OVERRIDE=GL_OES_texture_buffer;"
+    launch_extension="env MESA_EXTENSION_OVERRIDE=GL_OES_texture_buffer;"
 	addEmulator 0 "$md_id-ui" "3ds" "$launch_extension$launch_prefix$md_inst/borked3ds"
 	addEmulator 1 "$md_id-roms" "3ds" "$launch_extension$launch_prefix$md_inst/borked3ds %ROM%"
 	#addEmulator 1 "$md_id-room" "3ds" "$launch_extension$launch_prefix$md_inst/borked3ds-room"
 	#addEmulator 2 "$md_id-cli" "3ds" "$launch_extension$launch_prefix$md_inst/borked3ds-cli"
 	#addEmulator 3 "$md_id-tests" "3ds" "$launch_extension$launch_prefix$md_inst/tests"
 	addSystem "3ds" "3ds" ".3ds .3dsx .elf .axf .cci .cxi .app" 
+}
+
+function gui_borked3ds() {
+    #special charachters ■□▪▫▬▲►▼◄◊○◌●☺☻←↑→↓↔↕⇔
+    local csv=()
+    csv=(
+"□menu_item□□to_do□□□□□help_to_do□"
+"□Option 1□□#command option1□□□□□printMsgs dialog \"NO HELP\"□"
+"□Option 2□□#command option2□□□□□printMsgs dialog \"NO HELP\"□"
+"□Option 3□□#command option3□□□□□printMsgs dialog \"NO HELP\"□"
+"□Option 4□□#command option4□□□□□printMsgs dialog \"NO HELP\"□"
+    )
+    build_menu_borked3ds
+}
+
+function build_menu_borked3ds() {
+    local options=()
+    local default
+    local i
+    local run
+    IFS="□"
+    for i in ${!csv[@]}; do set ${csv[$i]}; options+=("$i" "$2");done
+    #remove option 0 (value 0 and 1) so the menu begins with 1
+    unset 'options[0]'; unset 'options[1]' 
+    while true; do
+        local cmd=(dialog --colors --no-collapse --help-button --menu "Choose an option" 22 76 16)
+        local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+        default="$choice"
+        IFS="□"
+        if [[ -n "$choice" ]]; then
+            joy2keyStop
+            joy2keyStart 0x00 0x00 kich1 kdch1 0x20 0x71
+            clear
+			if [[ $choice == HELP* ]];then
+			run="$(set ${csv[$(echo $choice|cut -d ' ' -f2)]};echo $9)"
+			else
+			run="$(set ${csv[$choice]};echo $4)"
+			fi
+            joy2keyStop
+            joy2keyStart
+            unset IFS
+	    eval $run
+	    joy2keyStart
+        else
+            break
+        fi
+    done
+    unset IFS
 }
