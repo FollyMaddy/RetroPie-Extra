@@ -109,11 +109,12 @@ function gui_borked3ds() {
     local csv=()
     csv=(
 "□menu_item□□to_do□□□□□help_to_do□"
-"□Option 1□□#command option1□□□□□printMsgs dialog \"NO HELP\"□"
-"□Option 2□□#command option2□□□□□printMsgs dialog \"NO HELP\"□"
-"□Option 3□□#command option3□□□□□printMsgs dialog \"NO HELP\"□"
-"□Option 4□□#command option4□□□□□printMsgs dialog \"NO HELP\"□"
-    )
+"□Add/Remove GL_OES_texture_buffer (Mesa Extension Overide)□□patch_es_systems_cfg_borked3ds□□□□□printMsgs dialog '@gvx64:\nI added support for GL_OES_texture_buffer in Borked3ds-rpi. This is a GLES 3.2 extension that the Pi does not completely support, but the code in Borked3ds-rpi does not depend on the problematic portions of this extension and so we can tap into this GLES 3.2 functionality on the Pi by using an environment variable override. to launch within Retropie with GL_OES_texture_buffer support enabled, edit the contents of /etc/emulationstation/es_systems.cfg so that the 3DS entry appears as follows. This will theoretically give better performance than the fall-back code path that uses 2D texture LUTs and it should be more accelerated in games that have fog/lighting effects (that said, I am not noticing much of an improvement on my Pi4, maybe because it is GPU is too weak for it to matter).'□"
+# next are a few examples
+#"□Enable Gles□□iniConfig \"=\" \"\" \"/home/$user/.config/borked3ds-emu/qt-config.ini\";iniSet \"use_gles\" \"true\"□□□□□printMsgs dialog \"NO HELP\"□"
+#"□Disable Gles□□iniConfig \"=\" \"\" \"/home/$user/.config/borked3ds-emu/qt-config.ini\";iniSet \"use_gles\" \"false\"□□□□□printMsgs dialog \"NO HELP\"□"
+#"□Overwrite qt-config.ini from pastebin (@DTEAM)□□curl https://pastebin.com/raw/KXEmXpjQ > \"/home/$user/.config/borked3ds-emu/qt-config.ini\"□□□□□printMsgs dialog \"NO HELP\"□"
+	)
     build_menu_borked3ds
 }
 
@@ -150,4 +151,22 @@ function build_menu_borked3ds() {
         fi
     done
     unset IFS
+}
+
+function patch_es_systems_cfg_borked3ds() {
+local patch_option
+local patch_msgs
+if [[ $(cat /etc/emulationstation/es_systems.cfg) == *"buffer;"* ]];then
+patch_msgs=Remove
+patch_option=-R
+else
+patch_msgs=Add
+patch_option=
+fi
+printMsgs dialog "$patch_msgs :\n'env MESA_EXTENSION_OVERRIDE=GL_OES_texture_buffer'\nin /etc/emulationstation/es_systems.cfg\n\nJust use this option again to reverse !"
+patch $patch_option /etc/emulationstation/es_systems.cfg << _EOF_
+@@ -1 +1 @@
+-    <command>/opt/retropie/supplementary/runcommand/runcommand.sh 0 _SYS_ 3ds %ROM%</command>
++    <command>env MESA_EXTENSION_OVERRIDE=GL_OES_texture_buffer;/opt/retropie/supplementary/runcommand/runcommand.sh 0 _SYS_ 3ds %ROM%</command>
+_EOF_
 }
