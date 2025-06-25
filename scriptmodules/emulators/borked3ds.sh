@@ -108,12 +108,12 @@ function gui_borked3ds() {
     #special charachters ■□▪▫▬▲►▼◄◊○◌●☺☻←↑→↓↔↕⇔
     local csv=()
     csv=(
-"□menu_item□□to_do□□□□□help_to_do□"
-"□Add/Remove GL_OES_texture_buffer (Mesa Extension Overide)□□patch_es_systems_cfg_borked3ds□□□□□printMsgs dialog '@gvx64:\nI added support for GL_OES_texture_buffer in Borked3ds-rpi. This is a GLES 3.2 extension that the Pi does not completely support, but the code in Borked3ds-rpi does not depend on the problematic portions of this extension and so we can tap into this GLES 3.2 functionality on the Pi by using an environment variable override. to launch within Retropie with GL_OES_texture_buffer support enabled, edit the contents of /etc/emulationstation/es_systems.cfg so that the 3DS entry appears as follows. This will theoretically give better performance than the fall-back code path that uses 2D texture LUTs and it should be more accelerated in games that have fog/lighting effects (that said, I am not noticing much of an improvement on my Pi4, maybe because it is GPU is too weak for it to matter).'□"
+`□menu_item□□to_do□□□□□help_to_do□`
+'□Add/Remove GL_OES_texture_buffer (Mesa Extension Overide)□□patch_es_systems_cfg_borked3ds□□□□□printMsgs dialog "@gvx64:\nI added support for GL_OES_texture_buffer in Borked3ds-rpi. This is a GLES 3.2 extension that the Pi does not completely support, but the code in Borked3ds-rpi does not depend on the problematic portions of this extension and so we can tap into this GLES 3.2 functionality on the Pi by using an environment variable override. to launch within Retropie with GL_OES_texture_buffer support enabled, edit the contents of /etc/emulationstation/es_systems.cfg so that the 3DS entry appears as follows. This will theoretically give better performance than the fall-back code path that uses 2D texture LUTs and it should be more accelerated in games that have fog/lighting effects (that said, I am not noticing much of an improvement on my Pi4, maybe because it is GPU is too weak for it to matter)."□'
 # next are a few examples
-#"□Enable Gles□□iniConfig \"=\" \"\" \"/home/$user/.config/borked3ds-emu/qt-config.ini\";iniSet \"use_gles\" \"true\"□□□□□printMsgs dialog \"NO HELP\"□"
-#"□Disable Gles□□iniConfig \"=\" \"\" \"/home/$user/.config/borked3ds-emu/qt-config.ini\";iniSet \"use_gles\" \"false\"□□□□□printMsgs dialog \"NO HELP\"□"
-#"□Overwrite qt-config.ini from pastebin (@DTEAM)□□curl https://pastebin.com/raw/KXEmXpjQ > \"/home/$user/.config/borked3ds-emu/qt-config.ini\"□□□□□printMsgs dialog \"NO HELP\"□"
+#'□Enable Gles□□iniConfig "=" "" "/home/$user/.config/borked3ds-emu/qt-config.ini";iniSet "use_gles" "true"□□□□□printMsgs dialog "NO HELP"□'
+#'□Disable Gles□□iniConfig "=" "" "/home/$user/.config/borked3ds-emu/qt-config.ini";iniSet "use_gles" "false"□□□□□printMsgs dialog "NO HELP"□'
+#'□Overwrite qt-config.ini from pastebin (@DTEAM)□□curl https://pastebin.com/raw/KXEmXpjQ > "/home/$user/.config/borked3ds-emu/qt-config.ini"□□□□□printMsgs dialog "NO HELP"□'
 	)
     build_menu_borked3ds
 }
@@ -125,8 +125,6 @@ function build_menu_borked3ds() {
     local run
     IFS="□"
     for i in ${!csv[@]}; do set ${csv[$i]}; options+=("$i" "$2");done
-    #remove option 0 (value 0 and 1) so the menu begins with 1
-    unset 'options[0]'; unset 'options[1]' 
     while true; do
         local cmd=(dialog --colors --no-collapse --help-button --menu "Choose an option" 22 76 16)
         local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
