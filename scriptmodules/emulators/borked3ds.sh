@@ -63,7 +63,7 @@ function sources_borked3ds() {
 #gitPullOrClone "$md_build" https://github.com/rtiangha/Borked3DS.git fix-gcc12
 #gitPullOrClone "$md_build" https://github.com/gvx64/Borked3DS-rpi.git
 
-	#Borked3DS requires a cmake 3.5 as minimum, we will use the 4.0.2 binary when using Bookworm of lower
+	#Borked3DS requires a cmake 3.5 as minimum, we will use the 4.0.2 binary when using Bookworm or lower
 	#find the files on "https://cmake.org/files/v4.0/" (cmake-4.0.2.tar.gz is source only)
 	if compareVersions $__gcc_version lt 14; then
 		if isPlatform "aarch64"; then
@@ -82,7 +82,7 @@ function build_borked3ds() {
  	isPlatform "aarch64" && extra_build_options="-DDYNARMIC_USE_BUNDLED_EXTERNALS=OFF"
 	mkdir build
 	cd build
-	#Borked3DS requires a cmake 3.5 as minimum, we will use the 4.0.2 binary when using Bookworm of lower
+	#Borked3DS requires a cmake 3.5 as minimum, we will use the 4.0.2 binary when using Bookworm or lower
 	if compareVersions $__gcc_version lt 14; then
 		$md_build/cmake-4.0.2/bin/cmake .. -DCMAKE_BUILD_TYPE=Release $extra_build_options
 		$md_build/cmake-4.0.2/bin/cmake --build . -- -j"$(nproc)"
