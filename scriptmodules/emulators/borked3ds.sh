@@ -66,13 +66,17 @@ function sources_borked3ds() {
 	#find the files on "https://cmake.org/files/v4.0/" (cmake-4.0.2.tar.gz is source only)
 	if compareVersions $__gcc_version lt 14; then
 		if isPlatform "aarch64"; then
-			gitPullOrClone "$md_build" https://github.com/gvx64/Borked3DS-rpi.git
 			downloadAndExtract https://cmake.org/files/v4.0/cmake-4.0.2-linux-aarch64.tar.gz "$md_build"
 		else
-			gitPullOrClone "$md_build" https://github.com/rtiangha/Borked3DS.git
 			downloadAndExtract https://cmake.org/files/v4.0/cmake-4.0.2-linux-x86_64.tar.gz "$md_build"
 		fi
 		mv cmake-4.0.2* cmake-4.0.2
+	fi
+	
+	if isPlatform "aarch64"; then
+		gitPullOrClone "$md_build" https://github.com/gvx64/Borked3DS-rpi.git
+	else
+		gitPullOrClone "$md_build" https://github.com/rtiangha/Borked3DS.git
 	fi
 }
  
