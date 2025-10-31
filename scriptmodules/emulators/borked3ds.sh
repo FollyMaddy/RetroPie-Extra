@@ -33,11 +33,10 @@ function depends_borked3ds() {
 		depends+=(libqt6core6t64)
 	fi
     #cpu based: additional libraries
+    #packages not in bookworm for x86_64 : libfdk-aac-dev
+	#robin-map-dev is in the source and found when using https://github.com/rtiangha/Borked3DS.git
 	if isPlatform "aarch64"; then
 		depends+=(libfdk-aac-dev robin-map-dev) 
-	else
-		# packages not in bookworm for x86_64 : libfdk-aac-dev
-		# robin-map-dev is in the source and found when using https://github.com/rtiangha/Borked3DS.git
 	fi
 	getDepends "${depends[@]}"
 }
