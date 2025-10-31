@@ -23,15 +23,21 @@ function depends_borked3ds() {
         md_ret_errors+=("Sorry, you need an OS with gcc 7.0 or newer to compile borked3ds")
         return 1
     fi
- 
-    # Additional libraries required for running
-	#local depends=(build-essential cmake clang clang-format libc++-dev libsdl2-dev libssl-dev qt6-l10n-tools qt6-tools-dev qt6-tools-dev-tools  qt6-base-dev qt6-base-private-dev libxcb-cursor-dev libvulkan-dev qt6-multimedia-dev libqt6sql6 libqt6core6 libasound2-dev xorg-dev libx11-dev libxext-dev libpipewire-0.3-dev libsndio-dev libfdk-aac-dev ffmpeg libgl-dev libswscale-dev libavformat-dev libavcodec-dev libavdevice-dev libglut3.12 libglut-dev freeglut3-dev mesa-vulkan-drivers libinput-dev) 
+    
+    #for aarch64 and x86_64 these dependancies are the same
+	local depends=(build-essential cmake clang clang-format libc++-dev libsdl2-dev libssl-dev qt6-l10n-tools qt6-tools-dev qt6-tools-dev-tools  qt6-base-dev qt6-base-private-dev libxcb-cursor-dev libvulkan-dev qt6-multimedia-dev libqt6sql6 libasound2-dev xorg-dev libx11-dev libxext-dev libpipewire-0.3-dev libsndio-dev ffmpeg libgl-dev  libswscale-dev libavformat-dev libavcodec-dev libavdevice-dev libglut3.12 libglut-dev freeglut3-dev mesa-vulkan-drivers) 
+	#use libqt6core6t64 for Trixie or higher
+    if compareVersions $__gcc_version lt 14; then
+		depends+=(libqt6core6)
+	else
+		depends+=(libqt6core6t64)
+	fi
+    #cpu based: additional libraries
 	if isPlatform "aarch64"; then
-		local depends=(build-essential cmake clang clang-format libc++-dev libsdl2-dev libssl-dev qt6-l10n-tools qt6-tools-dev qt6-tools-dev-tools  qt6-base-dev qt6-base-private-dev libxcb-cursor-dev libvulkan-dev qt6-multimedia-dev libqt6sql6 libqt6core6 libasound2-dev xorg-dev libx11-dev libxext-dev libpipewire-0.3-dev libsndio-dev libfdk-aac-dev ffmpeg libgl-dev  libswscale-dev libavformat-dev libavcodec-dev libavdevice-dev libglut3.12 libglut-dev freeglut3-dev mesa-vulkan-drivers robin-map-dev) 
+		depends+=(libfdk-aac-dev robin-map-dev) 
 	else
 		# packages not in bookworm for x86_64 : libfdk-aac-dev
 		# robin-map-dev is in the source and found when using https://github.com/rtiangha/Borked3DS.git
-		local depends=(build-essential cmake clang clang-format libc++-dev libsdl2-dev libssl-dev qt6-l10n-tools qt6-tools-dev qt6-tools-dev-tools  qt6-base-dev qt6-base-private-dev libxcb-cursor-dev libvulkan-dev qt6-multimedia-dev libqt6sql6 libqt6core6 libasound2-dev xorg-dev libx11-dev libxext-dev libpipewire-0.3-dev libsndio-dev ffmpeg libgl-dev  libswscale-dev libavformat-dev libavcodec-dev libavdevice-dev libglut3.12 libglut-dev freeglut3-dev mesa-vulkan-drivers) 
 	fi
 	getDepends "${depends[@]}"
 }
@@ -57,17 +63,18 @@ function sources_borked3ds() {
 #gitPullOrClone "$md_build" https://github.com/rtiangha/Borked3DS.git fix-gcc12
 #gitPullOrClone "$md_build" https://github.com/gvx64/Borked3DS-rpi.git
 
-	#Borked3DS requires a cmake 3.5 as minimum, we will use the 4.0.2 binary
+	#Borked3DS requires a cmake 3.5 as minimum, we will use the 4.0.2 binary when using Bookworm of lower
 	#find the files on "https://cmake.org/files/v4.0/" (cmake-4.0.2.tar.gz is source only)
-	
-	if isPlatform "aarch64"; then
-		gitPullOrClone "$md_build" https://github.com/gvx64/Borked3DS-rpi.git
-		downloadAndExtract https://cmake.org/files/v4.0/cmake-4.0.2-linux-aarch64.tar.gz "$md_build"
-	else
-		gitPullOrClone "$md_build" https://github.com/rtiangha/Borked3DS.git
-		downloadAndExtract https://cmake.org/files/v4.0/cmake-4.0.2-linux-x86_64.tar.gz "$md_build"
+	if compareVersions $__gcc_version lt 14; then
+		if isPlatform "aarch64"; then
+			gitPullOrClone "$md_build" https://github.com/gvx64/Borked3DS-rpi.git
+			downloadAndExtract https://cmake.org/files/v4.0/cmake-4.0.2-linux-aarch64.tar.gz "$md_build"
+		else
+			gitPullOrClone "$md_build" https://github.com/rtiangha/Borked3DS.git
+			downloadAndExtract https://cmake.org/files/v4.0/cmake-4.0.2-linux-x86_64.tar.gz "$md_build"
+		fi
+		mv cmake-4.0.2* cmake-4.0.2
 	fi
- 	mv cmake-4.0.2* cmake-4.0.2
 }
  
 function build_borked3ds() {
@@ -75,8 +82,14 @@ function build_borked3ds() {
  	isPlatform "aarch64" && extra_build_options="-DDYNARMIC_USE_BUNDLED_EXTERNALS=OFF"
 	mkdir build
 	cd build
-	$md_build/cmake-4.0.2/bin/cmake .. -DCMAKE_BUILD_TYPE=Release $extra_build_options
- 	$md_build/cmake-4.0.2/bin/cmake --build . -- -j"$(nproc)"
+	#Borked3DS requires a cmake 3.5 as minimum, we will use the 4.0.2 binary when using Bookworm of lower
+	if compareVersions $__gcc_version lt 14; then
+		$md_build/cmake-4.0.2/bin/cmake .. -DCMAKE_BUILD_TYPE=Release $extra_build_options
+		$md_build/cmake-4.0.2/bin/cmake --build . -- -j"$(nproc)"
+	else
+		cmake .. -DCMAKE_BUILD_TYPE=Release $extra_build_options
+		cmake --build . -- -j"$(nproc)"
+	fi
 	md_ret_require="$md_build/build/bin"
 }
  
